@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>WalkAble</title>
+
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+            margin: 0;
+
+            font-family:
+                Arial,
+                "Noto Sans KR",
+                sans-serif;
+
+            background: #f3f5f7;
+
+            color: #20242a;
+        }
+
+
+        /* ====================================================
+           상단
+        ==================================================== */
+
+        .top-bar {
+
+            height: 52px;
+
+            background: white;
+
+            display: flex;
+
+            align-items: center;
+
+            padding: 0 14px;
+
+            border-bottom: 1px solid #d9dde2;
+
+            box-shadow:
+                0 1px 6px
+                rgba(0, 0, 0, 0.05);
+
+            z-index: 1000;
+
+            position: relative;
+        }
+
+
+        .window-buttons {
+
+            display: flex;
+
+            gap: 8px;
+        }
+
+
+        .window-dot {
+
+            width: 13px;
+
+            height: 13px;
+
+            border-radius: 50%;
+        }
+
+
+        .dot-red {
+            background: #ff5f57;
+        }
+
+
+        .dot-yellow {
+            background: #febc2e;
+        }
+
+
+        .dot-green {
+            background: #28c840;
+        }
+
+
+        .logo {
+
+            margin-left: 20px;
+
+            font-size: 22px;
+
+            font-weight: 800;
+        }
+
+
+        /* ====================================================
+           전체
+        ==================================================== */
+
+        .container {
+
+            display: flex;
+
+            height:
+                calc(
+                    100vh - 52px
+                );
+        }
+
+
+        /* ====================================================
+           왼쪽
+        ==================================================== */
+
+        .sidebar {
+
+            width: 330px;
+
+            min-width: 330px;
+
+            padding: 22px 14px;
+
+            background: white;
+
+            overflow-y: auto;
+
+            border-right: 1px solid #e2e6ea;
+        }
+
+
+        .input-group {
+
+            margin-bottom: 18px;
+        }
+
+
+        .input-label {
+
+            display: block;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            margin-bottom: 8px;
+        }
+
+
+        .input-wrapper {
+
+            height: 48px;
+
+            display: flex;
+
+            align-items: center;
+
+            border: 1px solid #d6dce2;
+
+            border-radius: 10px;
+
+            padding: 0 12px;
+        }
+
+
+        .input-wrapper input {
+
+            width: 100%;
+
+            border: none;
+
+            outline: none;
+
+            font-size: 15px;
+        }
+
+
+        .input-icon {
+
+            margin-right: 10px;
+
+            color: #7b8794;
+        }
+
+
+        .route-button {
+
+            width: 100%;
+
+            height: 50px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: #087bf5;
+
+            color: white;
+
+            font-size: 17px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            margin-bottom: 28px;
+        }
+
+
+        .route-button:disabled {
+
+            background: #9bbff0;
+
+            cursor: wait;
+        }
+
+
+        .result-title {
+
+            font-size: 20px;
+
+            font-weight: 800;
+
+            margin-bottom: 12px;
+        }
+
+
+        .route-card {
+
+            border: 1px solid #dde3e8;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+
+            margin-bottom: 18px;
+
+            background: white;
+        }
+
+
+        .card-header {
+
+            padding: 13px 15px;
+
+            font-size: 16px;
+
+            font-weight: 800;
+        }
+
+
+        .recommended-header {
+
+            background: #e9f5ff;
+
+            color: #153a61;
+        }
+
+
+        .normal-header {
+
+            background: #f3f4f6;
+        }
+
+
+        .card-body {
+
+            padding: 14px 16px;
+        }
+
+
+        .metric {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            padding: 9px 0;
+
+            border-bottom: 1px solid #eef1f4;
+        }
+
+
+        .metric:last-child {
+
+            border-bottom: none;
+        }
+
+
+        .metric-label {
+
+            font-size: 14px;
+
+            color: #4b5563;
+        }
+
+
+        .metric-value {
+
+            font-size: 17px;
+
+            font-weight: 800;
+        }
+
+
+        .same-route-message {
+
+            display: none;
+
+            margin-bottom: 18px;
+
+            padding: 11px;
+
+            border-radius: 8px;
+
+            background: #fff7d6;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+
+        /* ====================================================
+           지도
+        ==================================================== */
+
+        .map-area {
+
+            flex: 1;
+
+            position: relative;
+
+            padding: 14px;
+        }
+
+
+        #map {
+
+            width: 100%;
+
+            height: 100%;
+
+            border-radius: 12px;
+
+            overflow: hidden;
+        }
+
+
+        /* ====================================================
+           범례
+        ==================================================== */
+
+        .legend-box {
+
+            position: absolute;
+
+            right: 35px;
+
+            bottom: 35px;
+
+            width: 265px;
+
+            background: white;
+
+            padding: 16px 18px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 3px 14px
+                rgba(0, 0, 0, 0.2);
+
+            z-index: 600;
+        }
+
+
+        .legend-title {
+
+            text-align: center;
+
+            font-weight: 800;
+
+            margin-bottom: 12px;
+        }
+
+
+        .gradient-line {
+
+            height: 10px;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #16a34a,
+                    #f59e0b,
+                    #ef4444
+                );
+
+            margin-bottom: 7px;
+        }
+
+
+        .gradient-labels {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            font-size: 12px;
+
+            color: #555;
+
+            margin-bottom: 15px;
+        }
+
+
+        .normal-description {
+
+            text-align: center;
+
+            font-size: 13px;
+        }
+
+
+        .normal-line {
+
+            display: inline-block;
+
+            width: 48px;
+
+            border-top:
+                5px dashed
+                #777777;
+
+            margin-right: 8px;
+        }
+
+
+        /* ====================================================
+           팝업
+        ==================================================== */
+
+        .photo-popup {
+
+            width: 245px;
+
+            font-size: 13px;
+        }
+
+
+        .photo-title {
+
+            font-size: 15px;
+
+            font-weight: 800;
+
+            margin-bottom: 10px;
+        }
+
+
+        .popup-image {
+
+            width: 100%;
+
+            max-height: 230px;
+
+            object-fit: contain;
+
+            border-radius: 8px;
+
+            margin-bottom: 12px;
+        }
+
+
+        .popup-section {
+
+            margin-bottom: 10px;
+
+            line-height: 1.5;
+        }
+
+
+        /* ====================================================
+           시작/도착 마커
+        ==================================================== */
+
+        .route-point {
+
+            width: 22px;
+
+            height: 22px;
+
+            border-radius: 50%;
+
+            border: 4px solid white;
+
+            box-shadow:
+                0 1px 5px
+                rgba(0, 0, 0, 0.5);
+        }
+
+
+        .start-point {
+
+            background:
+                #16a34a;
+        }
+
+
+        .end-point {
+
+            background:
+                #ef4444;
+        }
+
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="top-bar">
+
+        <div class="window-buttons">
+
+            <div class="window-dot dot-red"></div>
+
+            <div class="window-dot dot-yellow"></div>
+
+            <div class="window-dot dot-green"></div>
+
+        </div>
+
+
+        <div class="logo">
+            WalkAble
+        </div>
+
+    </div>
+
+
+    <div class="container">
+
+
+        <div class="sidebar">
+
+
+            <div class="input-group">
+
+                <label class="input-label">
+                    출발지
+                </label>
+
+
+                <div class="input-wrapper">
+
+                    <span class="input-icon">
+                        ◎
+                    </span>
+
+
+                    <input
+
+                        id="start"
+
+                        type="text"
+
+                        placeholder="출발지를 입력하세요"
+
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label class="input-label">
+                    도착지
+                </label>
+
+
+                <div class="input-wrapper">
+
+                    <span class="input-icon">
+                        ◎
+                    </span>
+
+
+                    <input
+
+                        id="end"
+
+                        type="text"
+
+                        placeholder="도착지를 입력하세요"
+
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button
+                class="route-button"
+                id="routeButton"
+            >
+
+                경로 찾기
+
+            </button>
+
+
+            <div class="result-title">
+                경로 탐색 결과
+            </div>
+
+
+            <div
+                class="same-route-message"
+                id="sameRouteMessage"
+            >
+
+                두 경로가 동일하거나 대부분 겹칩니다.
+                회색 점선은 일반 최단 경로입니다.
+
+            </div>
+
+
+            <!-- 추천 경로 -->
+
+            <div class="route-card">
+
+                <div
+                    class="
+                        card-header
+                        recommended-header
+                    "
+                >
+
+                    🚶 우리 시스템 추천 경로
+
+                </div>
+
+
+                <div class="card-body">
+
+
+                    <div class="metric">
+
+                        <span class="metric-label">
+                            예상 거리
+                        </span>
+
+                        <span
+                            class="metric-value"
+                            id="recommendedDistance"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="metric">
+
+                        <span class="metric-label">
+                            예상 소요 시간
+                        </span>
+
+                        <span
+                            class="metric-value"
+                            id="recommendedTime"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="metric">
+
+                        <span class="metric-label">
+                            불편도 점수
+                        </span>
+
+                        <span
+                            class="metric-value"
+                            id="recommendedScore"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- 일반 경로 -->
+
+            <div class="route-card">
+
+                <div
+                    class="
+                        card-header
+                        normal-header
+                    "
+                >
+
+                    🚶 일반 최단 경로
+
+                </div>
+
+
+                <div class="card-body">
+
+
+                    <div class="metric">
+
+                        <span class="metric-label">
+                            예상 거리
+                        </span>
+
+                        <span
+                            class="metric-value"
+                            id="normalDistance"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="metric">
+
+                        <span class="metric-label">
+                            예상 소요 시간
+                        </span>
+
+                        <span
+                            class="metric-value"
+                            id="normalTime"
+                        >
+                            -
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="map-area">
+
+
+            <div id="map"></div>
+
+
+            <div class="legend-box">
+
+                <div class="legend-title">
+
+                    우리 시스템 추천 경로
+                    <br>
+                    (불편도 점수)
+
+                </div>
+
+
+                <div class="gradient-line"></div>
+
+
+                <div class="gradient-labels">
+
+                    <span>낮음</span>
+
+                    <span>보통</span>
+
+                    <span>높음</span>
+
+                </div>
+
+
+                <div class="normal-description">
+
+                    <span class="normal-line"></span>
+
+                    일반 최단 경로
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <script>
+
+
+        // ====================================================
+        // 지도
+        // ====================================================
+
+        const map = L.map(
+            "map"
+        ).setView(
+            [
+                36.603,
+                127.298
+            ],
+            15
+        );
+
+
+        L.tileLayer(
+
+            "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
+
+            {
+
+                maxNativeZoom:
+                    17,
+
+                maxZoom:
+                    20,
+
+                attribution:
+                    "&copy; OpenStreetMap contributors"
+
+            }
+
+        ).addTo(map);
+
+
+        setTimeout(
+            () => map.invalidateSize(),
+            300
+        );
+
+
+        window.addEventListener(
+
+            "resize",
+
+            () => map.invalidateSize()
+
+        );
+
+
+        // ====================================================
+        // 결과 Layer
+        // ====================================================
+
+        const shortestLayer =
+            L.layerGroup().addTo(map);
+
+        const recommendedLayer =
+            L.layerGroup().addTo(map);
+
+        const photoLayer =
+            L.layerGroup().addTo(map);
+
+        const markerLayer =
+            L.layerGroup().addTo(map);
+
+
+        function clearResult() {
+
+            shortestLayer.clearLayers();
+
+            recommendedLayer.clearLayers();
+
+            photoLayer.clearLayers();
+
+            markerLayer.clearLayers();
+
+            document
+                .getElementById(
+                    "sameRouteMessage"
+                )
+                .style.display =
+                    "none";
+
+        }
+
+
+        // ====================================================
+        // 사진 팝업
+        // ====================================================
+
+        function makePhotoPopup(
+            photo
+        ) {
+
+            let detectionText = "";
+
+
+            const detections =
+                Object.entries(
+                    photo.detections
+                );
+
+
+            if (
+                detections.length
+                ===
+                0
+            ) {
+
+                detectionText =
+                    "검출 객체 없음";
+
+            }
+
+            else {
+
+                detections.forEach(
+
+                    ([name, count]) => {
+
+                        detectionText +=
+
+                            name
+                            +
+                            ": "
+                            +
+                            count
+                            +
+                            "<br>";
+
+                    }
+
+                );
+
+            }
+
+
+            return `
+
+                <div class="photo-popup">
+
+                    <div class="photo-title">
+                        현장 사진
+                    </div>
+
+                    <img
+                        src="${photo.image_url}"
+                        class="popup-image"
+                        alt="현장 사진"
+                    >
+
+                    <div class="popup-section">
+
+                        <b>파일명</b>
+                        <br>
+                        ${photo.filename}
+
+                    </div>
+
+                    <div class="popup-section">
+
+                        <b>YOLO 탐지 결과</b>
+                        <br>
+                        ${detectionText}
+
+                    </div>
+
+                    <div class="popup-section">
+
+                        <b>불편도</b>
+                        <br>
+                        ${photo.discomfort}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+        // ====================================================
+        // 사용자 정의 시작/도착 마커
+        // ====================================================
+
+        function createPointIcon(
+            type
+        ) {
+
+            return L.divIcon({
+
+                className:
+                    "",
+
+                html: `
+
+                    <div
+                        class="
+                            route-point
+                            ${type}-point
+                        ">
+                    </div>
+
+                `,
+
+                iconSize:
+                    [
+                        22,
+                        22
+                    ],
+
+                iconAnchor:
+                    [
+                        11,
+                        11
+                    ]
+
+            });
+
+        }
+
+
+        // ====================================================
+        // 경로 찾기
+        // ====================================================
+
+        async function searchRoute() {
+
+
+            const start =
+                document
+                .getElementById(
+                    "start"
+                )
+                .value
+                .trim();
+
+
+            const end =
+                document
+                .getElementById(
+                    "end"
+                )
+                .value
+                .trim();
+
+
+            if (
+                !start
+                ||
+                !end
+            ) {
+
+                alert(
+                    "출발지와 도착지를 모두 입력해주세요."
+                );
+
+                return;
+
+            }
+
+
+            const button =
+                document
+                .getElementById(
+                    "routeButton"
+                );
+
+
+            button.disabled =
+                true;
+
+            button.textContent =
+                "경로 계산 중...";
+
+
+            clearResult();
+
+
+            try {
+
+
+                const response =
+                    await fetch(
+
+                        "/api/route",
+
+                        {
+
+                            method:
+                                "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json"
+
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    {
+                                        start:
+                                            start,
+
+                                        end:
+                                            end
+                                    }
+                                )
+
+                        }
+
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok
+                    ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message
+                    );
+
+                }
+
+
+                // ============================================
+                // 결과 카드
+                // ============================================
+
+                document
+                    .getElementById(
+                        "recommendedDistance"
+                    )
+                    .textContent =
+
+                        (
+                            data
+                            .recommended
+                            .distance
+                            /
+                            1000
+                        )
+                        .toFixed(2)
+
+                        +
+
+                        " km";
+
+
+                document
+                    .getElementById(
+                        "recommendedTime"
+                    )
+                    .textContent =
+
+                        data
+                        .recommended
+                        .time
+
+                        +
+
+                        "분";
+
+
+                document
+                    .getElementById(
+                        "recommendedScore"
+                    )
+                    .textContent =
+
+                        data
+                        .recommended
+                        .discomfort
+
+                        +
+
+                        "점";
+
+
+                document
+                    .getElementById(
+                        "normalDistance"
+                    )
+                    .textContent =
+
+                        (
+                            data
+                            .shortest
+                            .distance
+                            /
+                            1000
+                        )
+                        .toFixed(2)
+
+                        +
+
+                        " km";
+
+
+                document
+                    .getElementById(
+                        "normalTime"
+                    )
+                    .textContent =
+
+                        data
+                        .shortest
+                        .time
+
+                        +
+
+                        "분";
+
+
+                // ============================================
+                // 두 경로가 동일
+                // ============================================
+
+                if (
+                    data.same_route
+                ) {
+
+                    document
+                        .getElementById(
+                            "sameRouteMessage"
+                        )
+                        .style.display =
+                            "block";
+
+                }
+
+
+                // ============================================
+                // 일반 최단 경로
+                //
+                // ★ 회색 점선
+                // ============================================
+
+                data
+                    .shortest
+                    .segments
+                    .forEach(
+
+                        segment => {
+
+
+                            L.polyline(
+
+                                segment.coordinates,
+
+                                {
+
+                                    color:
+                                        "#777777",
+
+                                    weight:
+                                        8,
+
+                                    opacity:
+                                        0.95,
+
+                                    dashArray:
+                                        "12, 10",
+
+                                    lineCap:
+                                        "round",
+
+                                    lineJoin:
+                                        "round"
+
+                                }
+
+                            )
+
+                            .bindTooltip(
+                                "일반 최단 경로"
+                            )
+
+                            .addTo(
+                                shortestLayer
+                            );
+
+
+                        }
+
+                    );
+
+
+                // ============================================
+                // 추천 경로
+                //
+                // ★ 일반 경로보다 약간 얇게 해서
+                // 겹쳐도 회색 점선이 보이도록
+                // ============================================
+
+                data
+                    .recommended
+                    .segments
+                    .forEach(
+
+                        segment => {
+
+
+                            L.polyline(
+
+                                segment.coordinates,
+
+                                {
+
+                                    color:
+                                        segment.color,
+
+                                    weight:
+                                        6,
+
+                                    opacity:
+                                        0.95,
+
+                                    lineCap:
+                                        "round",
+
+                                    lineJoin:
+                                        "round"
+
+                                }
+
+                            )
+
+                            .bindTooltip(
+
+                                "WalkAble 추천 경로"
+                                +
+                                "<br>"
+                                +
+                                "불편도: "
+                                +
+                                segment.route_score
+
+                            )
+
+                            .addTo(
+                                recommendedLayer
+                            );
+
+
+                        }
+
+                    );
+
+
+                // ============================================
+                // 시작 마커
+                //
+                // ★ 경로 Node 좌표에 정확히 위치
+                // ============================================
+
+                L.marker(
+
+                    [
+                        data.start.lat,
+                        data.start.lon
+                    ],
+
+                    {
+
+                        icon:
+                            createPointIcon(
+                                "start"
+                            )
+
+                    }
+
+                )
+
+                .bindPopup(
+
+                    "<b>출발지</b><br>"
+                    +
+                    data.start.name
+
+                )
+
+                .addTo(
+                    markerLayer
+                );
+
+
+                // ============================================
+                // 도착 마커
+                // ============================================
+
+                L.marker(
+
+                    [
+                        data.end.lat,
+                        data.end.lon
+                    ],
+
+                    {
+
+                        icon:
+                            createPointIcon(
+                                "end"
+                            )
+
+                    }
+
+                )
+
+                .bindPopup(
+
+                    "<b>도착지</b><br>"
+                    +
+                    data.end.name
+
+                )
+
+                .addTo(
+                    markerLayer
+                );
+
+
+                // ============================================
+                // 추천 경로 사진
+                // ============================================
+
+                data.photos.forEach(
+
+                    photo => {
+
+
+                        L.circleMarker(
+
+                            [
+                                photo.lat,
+                                photo.lon
+                            ],
+
+                            {
+
+                                radius:
+                                    6,
+
+                                color:
+                                    "#ffffff",
+
+                                weight:
+                                    2,
+
+                                fillColor:
+                                    "#ff9800",
+
+                                fillOpacity:
+                                    1
+
+                            }
+
+                        )
+
+                        .bindPopup(
+
+                            makePhotoPopup(
+                                photo
+                            ),
+
+                            {
+
+                                maxWidth:
+                                    290
+
+                            }
+
+                        )
+
+                        .bindTooltip(
+                            photo.filename
+                        )
+
+                        .addTo(
+                            photoLayer
+                        );
+
+
+                    }
+
+                );
+
+
+                // ============================================
+                // 지도 범위
+                // ============================================
+
+                const bounds =
+                    L.latLngBounds();
+
+
+                bounds.extend(
+                    [
+                        data.start.lat,
+                        data.start.lon
+                    ]
+                );
+
+
+                bounds.extend(
+                    [
+                        data.end.lat,
+                        data.end.lon
+                    ]
+                );
+
+
+                data
+                    .recommended
+                    .segments
+                    .forEach(
+
+                        segment => {
+
+                            segment
+                                .coordinates
+                                .forEach(
+
+                                    point => {
+
+                                        bounds.extend(
+                                            point
+                                        );
+
+                                    }
+
+                                );
+
+                        }
+
+                    );
+
+
+                map.fitBounds(
+
+                    bounds,
+
+                    {
+
+                        padding:
+                            [
+                                60,
+                                60
+                            ]
+
+                    }
+
+                );
+
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    error
+                );
+
+                alert(
+
+                    error.message
+                    ||
+                    "경로 계산 중 오류가 발생했습니다."
+
+                );
+
+            }
+
+            finally {
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    "경로 찾기";
+
+            }
+
+        }
+
+
+        // ====================================================
+        // 버튼
+        // ====================================================
+
+        document
+            .getElementById(
+                "routeButton"
+            )
+            .addEventListener(
+                "click",
+                searchRoute
+            );
+
+
+        // ====================================================
+        // Enter
+        // ====================================================
+
+        document
+            .getElementById(
+                "start"
+            )
+            .addEventListener(
+
+                "keydown",
+
+                event => {
+
+                    if (
+                        event.key
+                        ===
+                        "Enter"
+                    ) {
+
+                        searchRoute();
+
+                    }
+
+                }
+
+            );
+
+
+        document
+            .getElementById(
+                "end"
+            )
+            .addEventListener(
+
+                "keydown",
+
+                event => {
+
+                    if (
+                        event.key
+                        ===
+                        "Enter"
+                    ) {
+
+                        searchRoute();
+
+                    }
+
+                }
+
+            );
+
+
+    </script>
+
+
+</body>
+
+</html>

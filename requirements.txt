@@ -1,0 +1,10 @@
+Flask
+gunicorn
+pandas
+geopandas
+shapely
+networkx
+osmnx
+scikit-learn
+Pillow
+pillow-heif
